@@ -1,5 +1,7 @@
 
+// Define some sources and keywords and fetch the related results for later scraper
 export const handler = async () => {
+  
   let keywords:string[]=['consumer spending on food','food industry competition','food industry players','public health crises impact on food industry'];
   const combinedKeywords: string = keywords.join(" OR ");
 
