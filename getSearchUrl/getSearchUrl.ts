@@ -6,7 +6,6 @@ export const handler = async () => {
   const sources: string[] = ["https://www.euromonitor.com/*","https://www.foodsafetynews.com/*",'https://www.innovamarketinsights.com/*'];
   let results:string[]=[];
   const CSE_ID = "70f55c012579b4867";
-  const API_KEY= 'AIzaSyBDsxJwdVAVMhNqHEZINgvRENj0gz-oC3o';
   // Restrict date by :  dateRestrict=d1 (do not get enough data)  
 
   for (let i: number = 0; i < sources.length; i++) {
