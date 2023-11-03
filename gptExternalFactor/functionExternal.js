@@ -2,19 +2,52 @@ import OpenAI from "openai";
 const openai = new OpenAI();
 
 // In production, this could be your backend API or an external API
-function getExternalFactor(factor, reason,keywords) {
+function getExternalFactor(externalFactors,factor,reason,keywords,percentage) {
     
-    const factorInfo = {
-        "factor": factor,
-        "reason": reason,
-        "keywords": keywords,
-    };
+    console.log(externalFactors)
+    console.log("this is just input")
+
+    const prompt11= `I am a restaurant business located in Bauamtsgasse 7, 69117 Heidelberg, 
+    Germany  and this is the description of my business. Please tell me which are the 
+    Top 5 key forecastable /predictable external influencing factors for my sales 
+    forecast with a probability percentage in parenthesis:
+     
+    The "Schnitzelbank", a very special place we think...
+    It has its own unique atmosphere. The name goes back to the times when it was 
+    a coopers workshop, that made barrels for the local vintners.
+    Around 1900, the proprietors realized that selling wine instead of barrels was 
+    much more profitable, and certainly more fun. 
+    And the food is a perfect match for the old-world atmosphere - good plain country
+    cooking, tasty regional dishes and traditional German specialities.
+    Everything is freshly prepared, of course - and we also serve Schnitzels, by the 
+    way... not to mention our excellent local wines !`
+
+
+    const factorInfo = externalFactors.map((e) => ({
+        "factor": e.factor,
+        "reason": e.reason,
+        "keywords": e.keywords,
+        "percentage": e.percentage
+    }));
     return JSON.stringify(factorInfo);
 }
 
 async function runConversation() {
     // Step 1: send the conversation and available functions to GPT
-    const messages = [{"role": "user", "content": "give some key external factors influencing restaurants' sales?"}];
+    const messages = [{"role": "user", "content": `I am a restaurant business located in Bauamtsgasse 7, 69117 Heidelberg, 
+    Germany  and this is the description of my business. Please tell me which are the 
+    Top 5 key forecastable /predictable external influencing factors for my sales 
+    forecast with a probability percentage in parenthesis:
+     
+    The "Schnitzelbank", a very special place we think...
+    It has its own unique atmosphere. The name goes back to the times when it was 
+    a coopers workshop, that made barrels for the local vintners.
+    Around 1900, the proprietors realized that selling wine instead of barrels was 
+    much more profitable, and certainly more fun. 
+    And the food is a perfect match for the old-world atmosphere - good plain country
+    cooking, tasty regional dishes and traditional German specialities.
+    Everything is freshly prepared, of course - and we also serve Schnitzels, by the 
+    way... not to mention our excellent local wines !`}];
     const functions = [
         {
             "name": "write_external",
@@ -22,22 +55,31 @@ async function runConversation() {
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "factor": {
-                        "type": "string",
-                        "description": "keywords about key factor, such as weather, covid",
+                    "externalFactors":{
+                        "description": "a array which include five top factors and its reason,percentage and keywords ",
+                        "type":"array",
+                        "items": {
+                        "factor": {
+                            "type": "string",
+                            "description": "key factor, such as weather, covid",
+                        },
+                        "percentage": {
+                            "type": "number",
+                            "description": "a probability percentage showing why it is important, how it gonna impact sales",
+                        },
+                        "reason": {
+                          "type": "string",
+                          "description": "professionally explain why it is a important factors",
+                      },
+                      "keywords": {
+                        "items": {
+                          "type": "string",
+                          "description": "generate some keywords to search the current trend regarding this factor",
+                      },
                     },
-                    "reason": {
-                      "type": "string",
-                      "description": "one sentence explain why it is a important factors",
-                  },
-                  "keywords": {
-                    "items": {
-                      "type": "string",
-                      "description": "generate some keywords to search the current trend regarding this factor",
-                  },
+                    } }
                 },
-                },
-                "required": ["factor","reason","keywords"],
+                "required": ["factor","reason","keywords","externalFactors","percentage"],
             },
         }
     ];
@@ -63,9 +105,11 @@ async function runConversation() {
         const functionToCall = availableFunctions[functionName];
         const functionArgs = JSON.parse(responseMessage.function_call.arguments);
         const functionResponse = functionToCall(
+            functionArgs.externalFactors,
             functionArgs.factor,
-            functionArgs.reason,
             functionArgs.keywords,
+            functionArgs.reason,
+            functionArgs.percentage,
         );
         console.log(functionResponse)
 
