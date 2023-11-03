@@ -2,12 +2,12 @@ import OpenAI from "openai";
 const openai = new OpenAI();
 
 // In production, this could be your backend API or an external API
-function getExternalFactor(Externalfactors,factor, reason,sources) {
+function getExternalFactor(factor, reason,keywords) {
     
     const factorInfo = {
         "factor": factor,
         "reason": reason,
-        "sources": sources,
+        "keywords": keywords,
     };
     return JSON.stringify(factorInfo);
 }
@@ -22,25 +22,22 @@ async function runConversation() {
             "parameters": {
                 "type": "object",
                 "properties": {
-                  "Externalfactors":{
-                    "items":{"factor": {
+                    "factor": {
+                        "type": "string",
+                        "description": "keywords about key factor, such as weather, covid",
+                    },
+                    "reason": {
                       "type": "string",
-                      "description": "keywords about key factor, such as weather, covid",
+                      "description": "one sentence explain why it is a important factors",
                   },
-                  "reason": {
-                    "type": "string",
-                    "description": "one sentence explain why it is a important factors",
+                  "keywords": {
+                    "items": {
+                      "type": "string",
+                      "description": "generate some keywords to search the current trend regarding this factor",
+                  },
                 },
-                "sources": {
-                  "items": {
-                    "type": "string",
-                    "description": "URLs where to find more related information",
                 },
-              },
-                  }}
-                    
-                },
-                "required": ["Externalfactors","factor","reason","sources"],
+                "required": ["factor","reason","keywords"],
             },
         }
     ];
@@ -66,10 +63,9 @@ async function runConversation() {
         const functionToCall = availableFunctions[functionName];
         const functionArgs = JSON.parse(responseMessage.function_call.arguments);
         const functionResponse = functionToCall(
-          functionArgs.Externalfactors,
             functionArgs.factor,
             functionArgs.reason,
-            functionArgs.sources,
+            functionArgs.keywords,
         );
         console.log(functionResponse)
 
